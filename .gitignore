@@ -179,3 +179,15 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Model checkpoints (keep the released model)
+model/*.pth
+!model/text_model.pth
+
+# Logs / experiment outputs
+*.log
+runs/
