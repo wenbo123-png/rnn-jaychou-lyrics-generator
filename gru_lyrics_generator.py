@@ -124,7 +124,7 @@ class TextGenerator(nn.Module):
     # 隐藏层的初始化方法
     def init_hidden(self, batch_size):
         #隐藏层初始化：网络层数，批量大小，隐藏层向量维度
-        return torch.zeros((self.num_layers, batch_size, self.hidden_size))
+        return torch.zeros((self.num_layers, batch_size, self.hidden_size), device=device)
 
 # todo:4.模型训练
 def train():
