@@ -81,12 +81,6 @@
 
 ---
 
-## 图表解读（Interpretation）
-> TODO：后续可补充训练曲线解读，例如：
-- loss_curve.png：是否平滑下降、是否过拟合、早停触发点、学习率下降区间等（TODO）
-
----
-
 ## 环境与安装（Environment & Installation）
 - Python 3.8+（建议）
 - 依赖安装：
