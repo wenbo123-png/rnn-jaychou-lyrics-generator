@@ -288,36 +288,36 @@ def evaluate(start_word,sentence_length):
                 next_logits = logits[0, -1] / max(temperature, 1e-6)   # 温度缩放
 
                 # 重复惩罚：降低近期已生成词再次被采样的概率，减少复读和跑偏
-                if repetition_penalty is not None and repetition_penalty > 1.0:
-                    recent_tokens = output_idx[-max(1, repeat_window):]
-                    for token_id in set(recent_tokens):
+                if repetition_penalty is not None and repetition_penalty > 1.0:   # 判断是否启用重复惩罚（大于1.0启用）
+                    recent_tokens = output_idx[-max(1, repeat_window):]    # 获取最近生成的 token
+                    for token_id in set(recent_tokens):   # 用set去重，避免对同一个词多次惩罚
                         if next_logits[token_id] < 0:
-                            next_logits[token_id] *= repetition_penalty
+                            next_logits[token_id] *= repetition_penalty    # 对负数的logits进行放大，降低被采样的概率
                         else:
-                            next_logits[token_id] /= repetition_penalty
+                            next_logits[token_id] /= repetition_penalty    # 对非负数的logits进行缩小，降低被采样的概率
 
                 if top_k is not None and top_k > 0:
                     k = min(top_k, next_logits.shape[-1])
-                    topk_logits, topk_indices = torch.topk(next_logits, k)
-                    probs = torch.softmax(topk_logits, dim=-1)
-                    sampled_pos = torch.multinomial(probs, num_samples=1).item()
-                    current_idx = topk_indices[sampled_pos].item()
-                    total_log_prob += torch.log(probs[sampled_pos] + 1e-12).item()
-                else:
+                    topk_logits, topk_indices = torch.topk(next_logits, k)   # 从 logits 中选出分数最高的 k 个词及其索引
+                    probs = torch.softmax(topk_logits, dim=-1)   # 对这 k 个词做 softmax，得到概率分布
+                    sampled_pos = torch.multinomial(probs, num_samples=1).item()   # 根据概率分布随机采样一个词的位置（sampled_pos）
+                    current_idx = topk_indices[sampled_pos].item()   # 将采样到的词的索引赋给 current_idx，作为下一个生成词
+                    total_log_prob += torch.log(probs[sampled_pos] + 1e-12).item()   # 累计采样到该词的 log 概率，用于后续评估生成序列的平均概率
+                else:   # 不做 top-k 限制，直接对整个词表做 softmax 得到概率分布
                     probs = torch.softmax(next_logits, dim=-1)
                     current_idx = torch.multinomial(probs, num_samples=1).item()
                     total_log_prob += torch.log(probs[current_idx] + 1e-12).item()
 
                 output_idx.append(current_idx)
 
-        avg_log_prob = total_log_prob / max(sentence_length, 1)
+        avg_log_prob = total_log_prob / max(sentence_length, 1)   # 计算生成序列的平均对数概率
         return output_idx, avg_log_prob
-
-    candidates = []
-    for _ in range(max(1, num_candidates)):
+    # 进行多候选采样
+    candidates = []   # 存放所有生成的候选歌词及其得分
+    for _ in range(max(1, num_candidates)):   # 将每组候选歌词的得分和词索引序列作为元组，添加到候选列表中
         c_output_idx, c_score = generate_one_candidate(word_idx)
         candidates.append((c_score, c_output_idx))
-    output_idx = max(candidates, key=lambda x: x[0])[1]
+    output_idx = max(candidates, key=lambda x: x[0])[1]   # 挑选最佳候选
     # 将输出索引转换为词并打印：隐藏 <sep> 字面量，用空格展示分段
     for idx in output_idx:
         token = unique_words[idx]
