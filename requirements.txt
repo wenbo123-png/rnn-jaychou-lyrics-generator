@@ -1,4 +1,7 @@
-torch
-jieba
-numpy
-matplotlib
+# Core dependencies for training/inference
+jieba>=0.42.1
+numpy>=1.26.4
+
+# PyTorch:
+# - Install CPU/CUDA version based on your environment (see https://pytorch.org/get-started/locally/)
+torch>=2.7.1
