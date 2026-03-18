@@ -285,7 +285,7 @@ def evaluate(start_word,sentence_length):
             for _ in range(sentence_length):
                 input_tensor = torch.tensor([[current_idx]], dtype=torch.long).to(device)
                 logits, hidden = model(input_tensor, hidden)
-                next_logits = logits[0, -1] / max(temperature, 1e-6)
+                next_logits = logits[0, -1] / max(temperature, 1e-6)   # 温度缩放
 
                 # 重复惩罚：降低近期已生成词再次被采样的概率，减少复读和跑偏
                 if repetition_penalty is not None and repetition_penalty > 1.0:
